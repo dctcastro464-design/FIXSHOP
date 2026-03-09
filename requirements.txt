@@ -1,4 +1,5 @@
-flask
-qrcode
-pillow
+Flask
 gunicorn
+psycopg2-binary
+qrcode
+Pillow
