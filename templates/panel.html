@@ -1,0 +1,67 @@
+<h1>Panel de Reparaciones</h1>
+
+<form method="GET">
+
+<input name="buscar" placeholder="Buscar cliente / imei / orden">
+
+<button>Buscar</button>
+
+</form>
+
+<a href="/nueva">Nueva reparación</a>
+
+<table border="1">
+
+<tr>
+
+<th>Orden</th>
+<th>Cliente</th>
+<th>Equipo</th>
+<th>Estado</th>
+<th>Saldo</th>
+<th>Vendedor</th>
+<th>Factura</th>
+<th>Cambiar estado</th>
+
+</tr>
+
+{% for d in datos %}
+
+<tr>
+
+<td>{{ d[1] }}</td>
+<td>{{ d[2] }}</td>
+<td>{{ d[4] }} {{ d[5] }}</td>
+<td>{{ d[8] }}</td>
+<td>{{ d[9]-d[10] }}</td>
+<td>{{ d[11] }}</td>
+<td>{{ d[12] }}</td>
+
+<td>
+
+<form action="/estado_cambiar" method="POST">
+
+<input type="hidden" name="orden" value="{{ d[1] }}">
+
+<select name="estado">
+
+<option>Recibido</option>
+<option>Diagnóstico</option>
+<option>En reparación</option>
+<option>Esperando repuesto</option>
+<option>Reparado</option>
+<option>Listo para entregar</option>
+
+</select>
+
+<button>Actualizar</button>
+
+</form>
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</table>

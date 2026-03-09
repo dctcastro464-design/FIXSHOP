@@ -1,0 +1,24 @@
+<h1>Seguimiento de reparación</h1>
+
+{% if dato %}
+
+Orden: {{ dato[1] }} <br>
+Cliente: {{ dato[2] }} <br>
+Equipo: {{ dato[4] }} {{ dato[5] }} <br>
+IMEI: {{ dato[6] }} <br>
+Estado: {{ dato[8] }} <br>
+
+Costo: {{ dato[9] }} <br>
+Pagado: {{ dato[10] }} <br>
+
+Saldo: {{ dato[9] - dato[10] }}
+
+<br><br>
+
+<img src="/static/qr/{{ dato[1] }}.png" width="200">
+
+{% else %}
+
+Orden no encontrada
+
+{% endif %}
