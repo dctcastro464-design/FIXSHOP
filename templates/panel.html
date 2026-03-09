@@ -1,27 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Panel Reparaciones</title>
+
+<style>
+
+body{
+font-family: Arial;
+background:#f4f4f4;
+margin:40px;
+}
+
+h1{
+color:#333;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+background:white;
+}
+
+th,td{
+padding:10px;
+border:1px solid #ddd;
+text-align:center;
+}
+
+th{
+background:#333;
+color:white;
+}
+
+a{
+text-decoration:none;
+color:white;
+background:#007BFF;
+padding:6px 10px;
+border-radius:4px;
+}
+
+a:hover{
+background:#0056b3;
+}
+
+.boton-nuevo{
+background:#28a745;
+margin-bottom:20px;
+display:inline-block;
+}
+
+.eliminar{
+background:#dc3545;
+}
+
+</style>
+
+</head>
+
+<body>
+
 <h1>Panel de Reparaciones</h1>
 
-<form method="GET">
+<a class="boton-nuevo" href="/nueva">Nueva Reparación</a>
 
-<input name="buscar" placeholder="Buscar cliente / imei / orden">
+<br><br>
 
-<button>Buscar</button>
+<form method="GET" action="/panel">
+
+<input type="text" name="buscar" placeholder="Buscar cliente / IMEI / orden">
+
+<button type="submit">Buscar</button>
 
 </form>
 
-<a href="/nueva">Nueva reparación</a>
+<br>
 
-<table border="1">
+<table>
 
 <tr>
 
+<th>ID</th>
 <th>Orden</th>
 <th>Cliente</th>
-<th>Equipo</th>
+<th>Teléfono</th>
+<th>Modelo</th>
+<th>IMEI</th>
+<th>Falla</th>
 <th>Estado</th>
-<th>Saldo</th>
+<th>Costo</th>
+<th>Pagado</th>
 <th>Vendedor</th>
 <th>Factura</th>
-<th>Cambiar estado</th>
+<th>Acciones</th>
 
 </tr>
 
@@ -29,34 +101,44 @@
 
 <tr>
 
+<td>{{ d[0] }}</td>
 <td>{{ d[1] }}</td>
 <td>{{ d[2] }}</td>
-<td>{{ d[4] }} {{ d[5] }}</td>
+<td>{{ d[3] }}</td>
+<td>{{ d[4] }}</td>
+<td>{{ d[5] }}</td>
+<td>{{ d[6] }}</td>
+<td>{{ d[7] }}</td>
 <td>{{ d[8] }}</td>
-<td>{{ d[9]|int - d[10]|int }}</td>
+<td>{{ d[9] }}</td>
+<td>{{ d[10] }}</td>
 <td>{{ d[11] }}</td>
-<td>{{ d[12] }}</td>
 
 <td>
 
-<form action="/estado_cambiar" method="POST">
+<form action="/estado_cambiar" method="POST" style="margin-bottom:5px;">
 
 <input type="hidden" name="orden" value="{{ d[1] }}">
 
 <select name="estado">
 
 <option>Recibido</option>
-<option>Diagnóstico</option>
 <option>En reparación</option>
-<option>Esperando repuesto</option>
-<option>Reparado</option>
-<option>Listo para entregar</option>
+<option>Listo</option>
+<option>Entregado</option>
 
 </select>
 
-<button>Actualizar</button>
+<button type="submit">Cambiar</button>
 
 </form>
+
+<br>
+
+<a class="eliminar" href="/eliminar/{{ d[0] }}"
+onclick="return confirm('Eliminar registro?')">
+Eliminar
+</a>
 
 </td>
 
@@ -65,8 +147,6 @@
 {% endfor %}
 
 </table>
-<td>
-<a href="/eliminar/{{ d[0] }}" onclick="return confirm('Eliminar registro?')">
-Eliminar
-</a>
-</td>
+
+</body>
+</html>
