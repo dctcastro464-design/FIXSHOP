@@ -51,7 +51,7 @@ def login():
         usuario = request.form["usuario"]
         password = request.form["password"]
 
-        if usuario == "admin" and password == "admin":
+        if usuario == "fixshop" and password == "admin":
             session["admin"] = True
             return redirect("/panel")
 
@@ -134,7 +134,7 @@ def nueva():
         conn.commit()
         conn.close()
 
-        url = "http://127.0.0.1:5000/estado/" + orden
+        url = "https://fixshop.onrender.com/estado/" + orden
 
         img = qrcode.make(url)
 
