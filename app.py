@@ -1,14 +1,16 @@
 from flask import Flask, render_template, request, redirect, session
-import sqlite3
+import psycopg2
 import qrcode
 import os
 
 app = Flask(__name__)
-app.secret_key = "clave_secreta"
+app.secret_key = "clave_secreta_fixshop"
+
+DATABASE_URL = os.environ.get("DATABASE_URL")
 
 
 def conectar():
-    return sqlite3.connect("database.db")
+    return psycopg2.connect(DATABASE_URL)
 
 
 def init_db():
@@ -18,11 +20,10 @@ def init_db():
 
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS reparaciones(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id SERIAL PRIMARY KEY,
         orden TEXT,
         cliente TEXT,
         telefono TEXT,
-        marca TEXT,
         modelo TEXT,
         imei TEXT,
         falla TEXT,
@@ -40,8 +41,8 @@ def init_db():
 
 init_db()
 
-
 # LOGIN
+
 
 @app.route("/", methods=["GET", "POST"])
 def login():
@@ -58,7 +59,8 @@ def login():
     return render_template("login.html")
 
 
-# PANEL ADMIN
+# PANEL
+
 
 @app.route("/panel")
 def panel():
@@ -72,15 +74,20 @@ def panel():
     busqueda = request.args.get("buscar")
 
     if busqueda:
+
         cursor.execute("""
         SELECT * FROM reparaciones
-        WHERE cliente LIKE ?
-        OR imei LIKE ?
-        OR orden LIKE ?
-        """, (f"%{busqueda}%", f"%{busqueda}%", f"%{busqueda}%"))
+        WHERE cliente ILIKE %s
+        OR imei ILIKE %s
+        OR orden ILIKE %s
+        """, (
+            f"%{busqueda}%",
+            f"%{busqueda}%",
+            f"%{busqueda}%"
+        ))
 
     else:
-        cursor.execute("SELECT * FROM reparaciones")
+        cursor.execute("SELECT * FROM reparaciones ORDER BY id DESC")
 
     datos = cursor.fetchall()
 
@@ -91,6 +98,7 @@ def panel():
 
 # NUEVA REPARACION
 
+
 @app.route("/nueva", methods=["GET", "POST"])
 def nueva():
 
@@ -98,7 +106,6 @@ def nueva():
 
         cliente = request.form["cliente"]
         telefono = request.form["telefono"]
-        marca = request.form["marca"]
         modelo = request.form["modelo"]
         imei = request.form["imei"]
         falla = request.form["falla"]
@@ -114,13 +121,12 @@ def nueva():
 
         cursor.execute("""
         INSERT INTO reparaciones
-        (orden,cliente,telefono,marca,modelo,imei,falla,estado,costo,pagado,vendedor,factura)
-        VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
+        (orden,cliente,telefono,modelo,imei,falla,estado,costo,pagado,vendedor,factura)
+        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
         """, (
             orden,
             cliente,
             telefono,
-            marca,
             modelo,
             imei,
             falla,
@@ -153,6 +159,7 @@ def nueva():
 
 # CAMBIAR ESTADO
 
+
 @app.route("/estado_cambiar", methods=["POST"])
 def estado_cambiar():
 
@@ -164,9 +171,32 @@ def estado_cambiar():
 
     cursor.execute("""
     UPDATE reparaciones
-    SET estado=?
-    WHERE orden=?
+    SET estado=%s
+    WHERE orden=%s
     """, (estado, orden))
+
+    conn.commit()
+    conn.close()
+
+    return redirect("/panel")
+
+
+# ELIMINAR REGISTRO
+
+
+@app.route("/eliminar/<int:id>")
+def eliminar(id):
+
+    if "admin" not in session:
+        return redirect("/")
+
+    conn = conectar()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+    DELETE FROM reparaciones
+    WHERE id=%s
+    """, (id,))
 
     conn.commit()
     conn.close()
@@ -176,6 +206,7 @@ def estado_cambiar():
 
 # PAGINA CLIENTE
 
+
 @app.route("/estado/<orden>")
 def estado(orden):
 
@@ -184,7 +215,7 @@ def estado(orden):
 
     cursor.execute("""
     SELECT * FROM reparaciones
-    WHERE orden=?
+    WHERE orden=%s
     """, (orden,))
 
     dato = cursor.fetchone()
